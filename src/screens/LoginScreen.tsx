@@ -181,7 +181,7 @@ export default function LoginScreen(props: Props) {
         </View>
       </Modal>
 
-      <Header texto="Trust Value!" />
+      <Header texto="Control Tecnico" />
       <View style={styles.containerImage}>
         <Image source={require('../assets/logo.png')} style={styles.image} />
       </View>
