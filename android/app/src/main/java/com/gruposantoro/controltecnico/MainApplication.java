@@ -1,4 +1,4 @@
-package com.impaktoapp;
+package com.gruposantoro.controltecnico;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

@@ -83,7 +83,7 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.impaktoapp"
+    namespace "com.gruposantoro.controltecnico"
 
     packagingOptions {
        pickFirst 'lib/x86/libc++_shared.so'
@@ -95,7 +95,7 @@ android {
      }
 
     defaultConfig {
-        applicationId "com.impaktoapp"
+        applicationId "com.gruposantoro.controltecnico"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 21
