@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "116981722849",
+    "project_id": "trustvalue-517cc",
+    "storage_bucket": "trustvalue-517cc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:116981722849:android:06b34d1b783fdc5bfcd1a0",
+        "android_client_info": {
+          "package_name": "com.impaktoapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIppdF9lGAeynN50lEzf-2iI0guOoZsXs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
