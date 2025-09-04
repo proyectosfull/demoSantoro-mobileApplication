@@ -325,23 +325,7 @@ export default function MenuScreen(props: Props) {
       <View style={styles.containerMenu}>
         <View style={styles.containerSingle}>
           <TouchableOpacity onPress={() => {
-            if (finishDay === false) {
               props.navigation.navigate('EvidenciasScreen')
-            } else {
-              if (Platform.OS === 'android') {
-                ToastAndroid.show(
-                  'Sin asistencia no puedes enviar evidencias',
-                  ToastAndroid.SHORT,
-                );
-              } else {
-                Alert.alert(
-                  'No hay asistencia',
-                  'Sin asistencia no puedes enviar evidencias',
-                  [{ text: 'OK' }],
-                  { cancelable: false }
-                );
-              }
-            }
           }}>
             <CardMenu
               iconName={finishDay === false ? require('../assets/evidences.png') : require('../assets/evidencesBlock.png')}

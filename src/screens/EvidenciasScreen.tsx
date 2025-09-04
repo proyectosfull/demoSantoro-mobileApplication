@@ -46,6 +46,7 @@ const db = sqLite.openDatabase(
 
 export default function EvidenciasScreen(props: Props) {
   const [photo, setPhoto] = useState<{}[]>([]);
+  const [video, setVideo] = useState<{}[]>([]);
   const [existLocalData, setIsExistLocalData] = useState<string | null>(null);
   const [evidences, setEvidences] = useState<Evidences>({});
   const [isModalIntOpen, setIsModalIntOpen] = useState(false);
@@ -328,65 +329,65 @@ export default function EvidenciasScreen(props: Props) {
     );
   };
 
-  // const takeVideo = () => {
-  //   launchCamera(
-  //     {
-  //       mediaType: 'video',
-  //       durationLimit: 4,
-  //       quality: 0.5,
-  //     },
-  //     videoResponse => {
-  //       if (videoResponse.didCancel) return;
-  //       if (videoResponse.errorCode) return;
-  //       if (videoResponse.errorMessage) return;
-  //       if (video.length < 1) {
-  //         const uriVideo = videoResponse.assets && videoResponse.assets[0].uri;
-  //         const typeVideo = videoResponse.assets && videoResponse.assets[0].type;
-  //         const nameVideo = videoResponse.assets && videoResponse.assets[0].fileName;
-  //         if (uriVideo && typeof uriVideo === 'string') {
+   const takeVideo = () => {
+     launchCamera(
+       {
+       mediaType: 'video',
+         durationLimit: 6,
+         quality: 0.5,
+       },
+       videoResponse => {
+         if (videoResponse.didCancel) return;
+         if (videoResponse.errorCode) return;
+         if (videoResponse.errorMessage) return;
+         if (video.length < 1) {
+          const uriVideo = videoResponse.assets && videoResponse.assets[0].uri;
+           const typeVideo = videoResponse.assets && videoResponse.assets[0].type;
+           const nameVideo = videoResponse.assets && videoResponse.assets[0].fileName;
+           if (uriVideo && typeof uriVideo === 'string') {
 
-  //           const newVideo = {
-  //             uri: uriVideo,
-  //             type: typeVideo,
-  //             name: nameVideo,
-  //           };
+             const newVideo = {
+               uri: uriVideo,
+               type: typeVideo,
+               name: nameVideo,
+             };
 
-  //           setArchives((prevState) => ({
-  //             ...prevState,
-  //             videos: [...prevState.videos, newVideo],
-  //           }));
-  //           // Solo asigna el valor si uri es una cadena válida
-  //           setVideo([...video, uriVideo]); // Agrega la nueva URI al estado existente
-  //           if (Platform.OS === 'android') {
-  //             ToastAndroid.show(
-  //               '¡Se guardo la evidencia de su video',
-  //               ToastAndroid.SHORT,
-  //             );
-  //           } else {
-  //             Snackbar.show({
-  //               text: '¡Se guardo la evidencia de su video',
-  //               duration: Snackbar.LENGTH_LONG,
-  //               textColor: '#ed7d18',
-  //             });
-  //           }
-  //         }
-  //       } else {
-  //         if (Platform.OS === 'android') {
-  //           ToastAndroid.show(
-  //             'Solo puede adjuntar 1 video',
-  //             ToastAndroid.SHORT,
-  //           );
-  //         } else {
-  //           Snackbar.show({
-  //             text: 'Solo puede adjuntar 1 video',
-  //             duration: Snackbar.LENGTH_LONG,
-  //             textColor: '#ed7d18',
-  //           });
-  //         }
-  //       }
-  //     },
-  //   );
-  // };
+             setArchives((prevState) => ({
+               ...prevState,
+               videos: [...prevState.videos, newVideo],
+             }));
+             // Solo asigna el valor si uri es una cadena válida
+             setVideo([...video, uriVideo]); // Agrega la nueva URI al estado existente
+             if (Platform.OS === 'android') {
+               ToastAndroid.show(
+                 '¡Se guardo la evidencia de su video',
+                 ToastAndroid.SHORT,
+               );
+             } else {
+               Snackbar.show({
+                 text: '¡Se guardo la evidencia de su video',
+                 duration: Snackbar.LENGTH_LONG,
+                 textColor: '#ed7d18',
+               });
+             }
+           }
+         } else {
+           if (Platform.OS === 'android') {
+             ToastAndroid.show(
+               'Solo puede adjuntar 1 video',
+               ToastAndroid.SHORT,
+             );
+           } else {
+             Snackbar.show({
+               text: 'Solo puede adjuntar 1 video',
+               duration: Snackbar.LENGTH_LONG,
+               textColor: '#ed7d18',
+             });
+           }
+         }
+       },
+     );
+   };
 
 
   return (
@@ -497,13 +498,13 @@ export default function EvidenciasScreen(props: Props) {
                       onPress={takeImage}
                       style={{ margin: 0, padding: 0 }}
                     />
-                    {/* <IconButton
+                    { <IconButton
                       icon="file-video"
                       iconColor={'#888'}
                       size={28}
                       onPress={takeVideo}
                       style={{ margin: 0, padding: 0 }}
-                    /> */}
+                    /> }
                   </View>
 
                   <Button
