@@ -4,7 +4,7 @@
 
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, Dimensions, Modal, Platform, ToastAndroid, Image, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, Dimensions, Modal, Platform, ToastAndroid, Image, SafeAreaView, StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RootStackParamList } from '../routes/ParamList';
 import { useNavigation } from '@react-navigation/native';
@@ -185,6 +185,7 @@ export default function Header({ texto }: { texto: string }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor="#ed7d18" barStyle="light-content" />
       <View style={styles.containerLeft}>
         <Text style={styles.textHeader}>{texto}</Text>
       </View>

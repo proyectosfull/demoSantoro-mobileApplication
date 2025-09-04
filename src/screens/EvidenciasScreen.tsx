@@ -9,6 +9,7 @@ import {
   ToastAndroid,
   TouchableOpacity,
   View,
+  StatusBar,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../routes/ParamList';
@@ -65,18 +66,18 @@ export default function EvidenciasScreen(props: Props) {
 `;
 
 
-const obtenerFechaHoraUTC = async () => {
-  try {
-    const respuesta = await fetch('https://worldtimeapi.org/api/ip');
-    console.log(respuesta);
-    const datos = await respuesta.json();
-    console.log(datos.datetime);
-    setHoraActual(datos.datetime);
-  } catch (error) {
-    console.error('Error al obtener la fecha y hora UTC:', error);
-    return null;
-  }
-};
+  const obtenerFechaHoraUTC = async () => {
+    try {
+      const respuesta = await fetch('https://worldtimeapi.org/api/ip');
+      console.log(respuesta);
+      const datos = await respuesta.json();
+      console.log(datos.datetime);
+      setHoraActual(datos.datetime);
+    } catch (error) {
+      console.error('Error al obtener la fecha y hora UTC:', error);
+      return null;
+    }
+  };
 
   const getLocalUser = async () => {
     const userInLocal = await AsyncStorage.getItem('username');
@@ -151,7 +152,7 @@ const obtenerFechaHoraUTC = async () => {
                     ['token', 'Bearer ' + responseLogin.data.bearer_token],
                   ]).then(() => {
                     new TrustValueApi()
-                      .sendEvidences(evidences,horaActual.replace('T', ' ').substring(0, 19))
+                      .sendEvidences(evidences, horaActual.replace('T', ' ').substring(0, 19))
                       .then(responseTwoAsist => {
                         if (
                           responseTwoAsist.status === 200 ||
@@ -295,7 +296,7 @@ const obtenerFechaHoraUTC = async () => {
               photos: [...prevState.photos, newPhoto],
             }));
 
-            setPhoto([...photo, uriImage]); 
+            setPhoto([...photo, uriImage]);
             if (Platform.OS === 'android') {
               ToastAndroid.show(
                 '¡Se guardo la evidencia de su imagen',
@@ -390,6 +391,7 @@ const obtenerFechaHoraUTC = async () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#ed7d18" barStyle="light-content" />
       <Header texto="Evidencias" />
       <View style={styles.containerTitleText}>
         <Text style={styles.title}>
@@ -431,7 +433,7 @@ const obtenerFechaHoraUTC = async () => {
             } else {
               sendEvidencesTest(nuevoEvidences, setLoading);
             }
-            console.log(Evidences); 
+            console.log(Evidences);
           }}>
           {({
             handleChange,
@@ -482,12 +484,12 @@ const obtenerFechaHoraUTC = async () => {
                 />
 
                 <View style={{
-                  flexDirection: 'row', 
+                  flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   marginTop: 8,
                 }}>
-                  <View style={{ flexDirection: 'row', gap: 0, marginRight: -8}}>
+                  <View style={{ flexDirection: 'row', gap: 0, marginRight: -8 }}>
                     <IconButton
                       icon="file-image"
                       iconColor={'#888'}
@@ -513,15 +515,15 @@ const obtenerFechaHoraUTC = async () => {
                     loading={loading}
                     style={{ backgroundColor: '#ed7d18', borderRadius: 10 }}
                     labelStyle={{ ...styles.buttonFont, color: '#fff' }}
-                    >
+                  >
                     ENVIAR
                   </Button>
                 </View>
               </View>
 
               <View style={{ flexDirection: 'row', marginTop: 10 }}>
-                <Text style={{color: '#888'}}>N° de Archivos Cargados: </Text>
-                <Text style={{color: '#888'}}>{photo.length}</Text>
+                <Text style={{ color: '#888' }}>N° de Archivos Cargados: </Text>
+                <Text style={{ color: '#888' }}>{photo.length}</Text>
               </View>
 
             </View>
@@ -585,7 +587,7 @@ const styles = StyleSheet.create({
     marginTop: '-21%',
     borderWidth: 1,
     borderColor: '#fff',
-    alignSelf:'flex-end',
+    alignSelf: 'flex-end',
   },
 
   buttonFont: {

@@ -58,7 +58,7 @@ export default function CardMenu(props: ItemMenuProps) {
                  props.nav?.navigate('ComunicadosScreen');
               } else if( props.name === 'Encuesta'){
                 props.nav?.navigate('EncuestasScreen');
-              } else if ('Evaluacion') {
+              } else if (props.name === 'Evaluacion') {
                 props.nav?.navigate('EvaluacionesScreen');
               }
             }
@@ -94,7 +94,7 @@ export default function CardMenu(props: ItemMenuProps) {
     : styles.container;
   return (
     <View style={containerStyle}>
-      <Image source={props.iconName} style={{ width: '30%', height: '30%' }} />
+      <Image source={props.iconName} style={{ width: '50%', height: '30%' }} />
       <Text style={styles.itemName}>{props.name}</Text>
       {renderMenuIcon()}
     </View>
@@ -104,7 +104,7 @@ export default function CardMenu(props: ItemMenuProps) {
 const styles = StyleSheet.create({
   container: {
     width: '95%',
-    height: '100%',
+    height: '95%',
     borderRadius: 20,
     borderColor: '#c1c1c1',
     borderTopWidth: 1,
@@ -140,7 +140,6 @@ const styles = StyleSheet.create({
     top: 1,
     right: 1,
   },
-
   containerImage: {
     width: '25%',
     backgroundColor: '#f2f2f6',
@@ -155,7 +154,7 @@ const styles = StyleSheet.create({
   },
   itemName: {
     color: '#837c79',
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: '500',
     fontStyle: 'italic',
   },

@@ -1,6 +1,6 @@
 export default class TrustValueApiUrls {
     //static readonly BASEURL = 'https://trustvalue.dev.darpinnova.com/api/';
-    static readonly BASEURL = 'http://187.188.66.56:8025/api/'; // Servidor prueba de santoro ** 8025
+    static readonly BASEURL = 'http://187.188.66.56:8026/api/'; // Servidor prueba de santoro ** 8025
     //static readonly BASEURL = 'http://192.168.100.30:8081/api/'; // Servidor local Alan 
 
     static readonly LOGIN = TrustValueApiUrls.BASEURL + 'login';

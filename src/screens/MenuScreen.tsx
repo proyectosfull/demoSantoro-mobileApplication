@@ -10,6 +10,7 @@ import {
   Dimensions,
   Image,
   Alert,
+  StatusBar,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '../routes/ParamList';
@@ -29,7 +30,6 @@ import UserLogin from '../models/UserLogin';
 import NetInfo from '@react-native-community/netinfo';
 import { useFocusEffect } from '@react-navigation/native';
 import TrustValueApiUrls from '../network/TrustValueApiUrls';
-import { boolean } from 'yup';
 
 type Props = StackScreenProps<RootStackParamList, 'MenuScreen'>;
 interface TypesLocalDB {
@@ -73,7 +73,7 @@ export default function MenuScreen(props: Props) {
   const [diferenciaComunicados, setDiferenciacomunicados] = useState(0);
   const [idAsistencia, setIdAsistencia] = useState<number | undefined>(undefined);
 
-  //al cargar la app, obtieen valores del asyncStorage
+  //al cargar la app, obtiene valores del asyncStorage
   const getAsistenciaValue = async () => {
     try {
       NetworkService.init();
@@ -89,8 +89,7 @@ export default function MenuScreen(props: Props) {
       const evidencesInLocal = await AsyncStorage.getItem('evidencesLocally');
       const idAsist = await AsyncStorage.getItem('idAsistencia');
 
-
-      console.log('Finish day en menu es ' + value)
+      console.log('Finish day en menu es ' + value);
       const parsedLimite = Number(lim);
       const parsedIdAsist = idAsist ? Number(idAsist) : undefined;
 
@@ -102,7 +101,6 @@ export default function MenuScreen(props: Props) {
         evidencias: evidencesInLocal,
       }));
 
-      //settear los valores del storage a los estados
       setUserDataLocal({
         username: userInLocal,
         password: passInLocal,
@@ -121,13 +119,11 @@ export default function MenuScreen(props: Props) {
       console.error('Error al obtener el valor de AsyncStorage:', error);
     }
   };
-  // funciones para cerrar modal
+
   const toggleModal = () => {
     setIsModalMenuOpen(!isModalMenuOpen);
   };
 
-
-  // Funcion para finalizar jornada hasta 3 intentos
   const handleFinishDay = async (piezas: number, abordos: number) => {
     setLoading(true); 
     const MAX_RETRIES = 3;
@@ -137,14 +133,12 @@ export default function MenuScreen(props: Props) {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-
         const resp = await axiosInst.post(TrustValueApiUrls.ENDDAY, {
           asistencia_id: asistenciaId, 
           piezas,
           abordos
         });
         if (resp.data.status == 1) {
-          // Exito se limpia el estado
           await AsyncStorage.setItem('asistencia', 'true');
           await AsyncStorage.removeItem('idAsistencia');
           setLoading(false); 
@@ -156,13 +150,10 @@ export default function MenuScreen(props: Props) {
       } catch (error) {
         console.error(`Error en el intento ${attempt} finalizar jornada:`, error);
       }
-      // se espera antes de reintentar
       await new Promise(res => setTimeout(res, RETRY_DELAY_MS)); 
     }
-    // si todos los reintentos fallan se quita el loading
     setLoading(false);
-  }
-
+  };
 
   const handleOutsidePress = () => {
     if (isModalMenuOpen) {
@@ -175,36 +166,32 @@ export default function MenuScreen(props: Props) {
   }, []);
 
   useEffect(
-        useCallback(() => {
-          const { pending, justRegistered } = props.route.params || {};
+    useCallback(() => {
+      const { pending, justRegistered } = props.route.params || {};
 
-          if (justRegistered) {
-            
-            if (Platform.OS === 'android') {
-              ToastAndroid.show(
-                'La asistencia se ha registrado correctamente',
-                ToastAndroid.LONG
-              );
-            } else {
-              Alert.alert('Asistencia registrada', 'La asistencia se ha registrado correctamente', [{ text: 'OK' }]);
-            }
-            
-            props.navigation.setParams({ justRegistered: false });
-          } else if (pending) {
-            
-            if (Platform.OS === 'android') {
-              ToastAndroid.show(
-                'Ya tienes una asistencia pendiente registrada.',
-                ToastAndroid.LONG
-              );
-            } else {
-              Alert.alert('Asistencia pendiente', 'Ya tienes una asistencia pendiente registrada.', [{ text: 'OK' }]);
-            }
-            
-            props.navigation.setParams({ pending: false });
-          }
-        }, [props.route.params])
-    );
+      if (justRegistered) {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(
+            'La asistencia se ha registrado correctamente',
+            ToastAndroid.LONG
+          );
+        } else {
+          Alert.alert('Asistencia registrada', 'La asistencia se ha registrado correctamente', [{ text: 'OK' }]);
+        }
+        props.navigation.setParams({ justRegistered: false });
+      } else if (pending) {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(
+            'Ya tienes una asistencia pendiente registrada.',
+            ToastAndroid.LONG
+          );
+        } else {
+          Alert.alert('Asistencia pendiente', 'Ya tienes una asistencia pendiente registrada.', [{ text: 'OK' }]);
+        }
+        props.navigation.setParams({ pending: false });
+      }
+    }, [props.route.params])
+  );
 
   useEffect(() => {
     const unsubscribeFocus = props.navigation.addListener('focus', async () => {
@@ -222,24 +209,18 @@ export default function MenuScreen(props: Props) {
     };
   }, [props.navigation]);
 
-
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
       setConnect(state.isConnected);
       setReacheable(state.isInternetReachable);
       NetworkService.isConnected = state.isConnected;
       NetworkService.isInternetReacheable = state.isInternetReachable;
-      console.log('Internet accesible?');
-      console.log(state.isInternetReachable);
-      console.log(state.isConnected);
     });
     return () => {
       unsubscribe();
     };
   }, [connect, reacheable]);
 
-
-  //funcion que cierra sesion
   const tryLogout = useCallback((setLoading: (value: boolean) => void) => {
     NetworkService.init();
     if (NetworkService.isConnected === true && NetworkService.isInternetReacheable) {
@@ -251,8 +232,6 @@ export default function MenuScreen(props: Props) {
             new TrustValueApi()
               .login(userDataLocal)
               .then(responseLogin => {
-                //si el inicio de sesion es correcto, se guardan los siguientes valores
-                //en el async storage
                 if (responseLogin.data.status !== 0) {
                   AsyncStorage.multiSet([
                     ['logged', 'true'],
@@ -283,14 +262,11 @@ export default function MenuScreen(props: Props) {
                       .catch(error => {
                         console.log(error);
                         Snackbar.show({
-                          text:
-                            'Error al cerrar sesion',
+                          text: 'Error al cerrar sesion',
                           duration: Snackbar.LENGTH_LONG,
                         });
                       });
                   });
-                } else {
-                  console.log('');
                 }
               })
               .catch(error => {
@@ -322,8 +298,7 @@ export default function MenuScreen(props: Props) {
           setLoading(false);
           console.log(error);
           Snackbar.show({
-            text:
-              'Error al cerrar sesion',
+            text: 'Error al cerrar sesion',
             duration: Snackbar.LENGTH_LONG,
           });
         });
@@ -332,122 +307,9 @@ export default function MenuScreen(props: Props) {
     }
   }, [userDataLocal]);
 
-  const getAnnouncements = async () => {
-    const numeroUltimosComunicados = await AsyncStorage.getItem('ultimoTamanio');
-    NetworkService.init();
-    if (NetworkService.isConnected === true && NetworkService.isInternetReacheable === true) {
-      setLoading(true);
-      try {
-        const response = await new TrustValueApi().getAnnouncements();
-        if (
-          (response.status === 200 ||
-            response.status === 201) &&
-          response.data.status === 1
-        ) {
-          const respuestaComunicados = response.data.data.data;
-          setComunicadosUsuario(response.data.data.data);
-          if (numeroUltimosComunicados !== null) {
-            setDiferenciacomunicados(respuestaComunicados.length - parseInt(numeroUltimosComunicados));
-          } else {
-            setDiferenciacomunicados(respuestaComunicados.length);
-          }
-        }
-      } catch (error) {
-        setLoading(false);
-        console.log('El error es' + error);
-        if (axios.isAxiosError(error)) {
-          if (error.response) {
-            Snackbar.show({
-              text: 'Ocurrió un error interno, inténtalo más tarde',
-              duration: Snackbar.LENGTH_LONG,
-              textColor: '#ed7d18',
-            });
-          }
-        }
-      }
-    }
-  };
-
-  const getEvaluations = async () => {
-    NetworkService.init();
-    if (NetworkService.isConnected === true && NetworkService.isInternetReacheable === true) {
-      setLoading(true);
-      try {
-        const response = await new TrustValueApi().getEvaluations();
-        if (
-          (response.status === 200 ||
-            response.status === 201) &&
-          response.data.status === 1
-        ) {
-          setLoading(false);
-          setEvaluacionesUsuario(response.data.data.data);
-        }
-      } catch (error) {
-        setLoading(false);
-        console.log('El error es' + error);
-        if (axios.isAxiosError(error)) {
-          if (error.response) {
-            Snackbar.show({
-              text: 'Ocurrió un error interno, inténtalo más tarde',
-              duration: Snackbar.LENGTH_LONG,
-              textColor: '#ed7d18',
-            });
-          }
-        }
-      }
-    }
-  };
-
-  const getSurveys = async () => {
-    NetworkService.init();
-    if (NetworkService.isConnected === true && NetworkService.isInternetReacheable === true) {
-      setLoading(true);
-      try {
-        const response = await new TrustValueApi().getSurveys();
-        if (
-          (response.status === 200 ||
-            response.status === 201) &&
-          response.data.status === 1
-        ) {
-          setLoading(false);
-          setEncuestasUsuario(response.data.data.data);
-        }
-      } catch (error) {
-        setLoading(false);
-        console.log('El error es' + error);
-        if (axios.isAxiosError(error)) {
-          if (error.response) {
-            Snackbar.show({
-              text: 'Ocurrió un error interno, inténtalo más tarde',
-              duration: Snackbar.LENGTH_LONG,
-              textColor: '#ed7d18',
-            });
-          }
-        }
-      }
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      getAnnouncements();
-    }, [])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      getEvaluations();
-    }, [])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      getSurveys();
-    }, [])
-  );
-
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#ed7d18" barStyle="light-content" />
       <Appbar.Header style={{ backgroundColor: '#ed7d18', height: 50 }}>
         <Appbar.BackAction
           onPress={() => {
@@ -458,148 +320,43 @@ export default function MenuScreen(props: Props) {
         <Appbar.Content title="Menú" titleStyle={{ color: '#f2f2f6' }} />
         <Appbar.Action icon="account" color={'#f2f2f6'} onPress={toggleModal} />
       </Appbar.Header>
+
+      {/* --- SOLO EVIDENCIAS Y FIN DE JORNADA --- */}
       <View style={styles.containerMenu}>
-        <View style={styles.containerRow}>
-          <View style={styles.containerLeft}>
-            <TouchableOpacity
-              disabled={false}
-              onPress={() => props.navigation.navigate('ComunicadosScreen')}>
-              <CardMenu
-                iconName={require('../assets/comunicados.png')}
-                name="Comunicados"
-                blocked={false}
-                connectedWifi={NetworkService.isConnected}
-                internetReacheable={NetworkService.isInternetReacheable}
-                nav={props.navigation}
-                pendientes={diferenciaComunicados}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.containerRight}>
-            <TouchableOpacity
-              disabled={false}
-              onPress={() => {
-                if (finishDay === false) {
-                  props.navigation.navigate('SimuladorScreen')
-                } else {
-                  if (Platform.OS === 'android') {
-                    ToastAndroid.show(
-                      'Sin asistencia no puedes acceder al simulador',
-                      ToastAndroid.SHORT,
-                    );
-  
-                  } else {
-                    Alert.alert(
-                      'No hay asistencia',
-                      'Sin asistencia no acceder al simulador',
-                      [
-                        {
-                          text: 'OK',
-                        },
-                      ],
-                      { cancelable: false }
-                    );
-  
-                  }
-                }
-              }}>
-              <CardMenu
-                iconName={finishDay === false ? require('../assets/simulador.png') : require('../assets/simuladorBlock.png')}
-                name="Simulador"
-                blocked={finishDay === false ? false : true}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.containerRow}>
-          <View style={styles.containerLeft}>
-            <TouchableOpacity onPress={() => {
-              if (finishDay === false) {
-                props.navigation.navigate('EvidenciasScreen')
+        <View style={styles.containerSingle}>
+          <TouchableOpacity onPress={() => {
+            if (finishDay === false) {
+              props.navigation.navigate('EvidenciasScreen')
+            } else {
+              if (Platform.OS === 'android') {
+                ToastAndroid.show(
+                  'Sin asistencia no puedes enviar evidencias',
+                  ToastAndroid.SHORT,
+                );
               } else {
-                if (Platform.OS === 'android') {
-                  ToastAndroid.show(
-                    'Sin asistencia no puedes enviar evidencias',
-                    ToastAndroid.SHORT,
-                  );
-
-                } else {
-                  Alert.alert(
-                    'No hay asistencia',
-                    'Sin asistencia no puedes enviar evidencias',
-                    [
-                      {
-                        text: 'OK',
-                      },
-                    ],
-                    { cancelable: false }
-                  );
-
-                }
+                Alert.alert(
+                  'No hay asistencia',
+                  'Sin asistencia no puedes enviar evidencias',
+                  [{ text: 'OK' }],
+                  { cancelable: false }
+                );
               }
-              
-              
-            }}>
-              <CardMenu
-                iconName={finishDay === false ? require('../assets/evidences.png') : require('../assets/evidencesBlock.png')}
-                name="Evidencias"
-                blocked={finishDay === false ? false : true}
-                connectedWifi={NetworkService.isConnected}
-                internetReacheable={NetworkService.isInternetReacheable}
-                existLocalData={localDataBase.evidencias}
-                nav={props.navigation}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.containerRight}>
-            <TouchableOpacity
-              disabled={false}
-              onPress={() => props.navigation.navigate('FichasScreen')}>
-              <CardMenu
-                iconName={require('../assets/fichas.png')}
-                name="Fichas"
-                blocked={false}
-              />
-            </TouchableOpacity>
-          </View>
+            }
+          }}>
+            <CardMenu
+              iconName={finishDay === false ? require('../assets/evidences.png') : require('../assets/evidencesBlock.png')}
+              name="Evidencias"
+              blocked={finishDay === false ? false : true}
+              connectedWifi={NetworkService.isConnected}
+              internetReacheable={NetworkService.isInternetReacheable}
+              existLocalData={localDataBase.evidencias}
+              nav={props.navigation}
+            />
+          </TouchableOpacity>
         </View>
-        <View style={styles.containerRow}>
-          <View style={styles.containerLeft}>
-            <TouchableOpacity
-              disabled={false}
-              onPress={() =>
-                props.navigation.navigate('EvaluacionesScreen')
-              }>
-              <CardMenu
-                iconName={require('../assets/evaluacion.png')}
-                name="Evaluación"
-                blocked={false}
-                connectedWifi={NetworkService.isConnected}
-                internetReacheable={NetworkService.isInternetReacheable}
-                nav={props.navigation}
-                pendientes={evaluacionesUsuario?.length}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.containerRight}>
-            <TouchableOpacity
-              disabled={false}
-              onPress={() =>
-                props.navigation.navigate('EncuestasScreen')
-              }>
-              <CardMenu iconName={require('../assets/encuesta.png')}
-                name="Encuesta"
-                blocked={false}
-                connectedWifi={NetworkService.isConnected}
-                internetReacheable={NetworkService.isInternetReacheable}
-                nav={props.navigation}
-                pendientes={encuestasUsuario?.length} />
-            </TouchableOpacity>
-          </View>
-        </View>
+
         <TouchableOpacity onPress={() => {
           if (finishDay === false) {
-            // llamamos directo al retry
             setIsModalIncOpen(true); 
           } else {
             if (Platform.OS === 'android') {
@@ -607,27 +364,23 @@ export default function MenuScreen(props: Props) {
                 'Sin asistencia no puedes finalizar jornada',
                 ToastAndroid.SHORT,
               );
-
             } else {
               Alert.alert(
                 'No hay asistencia',
                 'Para poder finalizar jornada, es necesario enviar asistencia antes.',
-                [
-                  {
-                    text: 'OK',
-                  },
-                ],
+                [{ text: 'OK' }],
                 { cancelable: false }
               );
-
             }
           }
         }}
-          style={{ backgroundColor: '#4682B4', height: 50, width: '70%', justifyContent: 'center', alignItems: 'center', flexDirection: 'row', marginTop: '2.5%', borderRadius: 10, marginLeft: '2%', alignSelf: 'center' }}>
+          style={{ backgroundColor: '#4682B4', height: 50, width: '70%', justifyContent: 'center', alignItems: 'center', flexDirection: 'row', marginBottom: '5%', borderRadius: 10, marginLeft: '2%', alignSelf: 'center' }}>
           <Icon name="logout" size={25} color="#f2f2f6" />
           <Text style={{ color: '#f2f2f6', fontWeight: '500', fontSize: 24, marginLeft: 5 }}>Fin de Jornada</Text>
         </TouchableOpacity>
       </View>
+
+      {/* --- MODALES --- */}
       <ModalEvaOEnc
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}
@@ -663,12 +416,12 @@ export default function MenuScreen(props: Props) {
                 </TouchableOpacity>
               </View>
               <View style={styles.containerIcon}>
-                {userInSesion.profile_picture ? ( // Renderiza si userInSession.profile_picture tiene un valor
+                {userInSesion?.profile_picture ? (
                   <Image
                     style={{ width: 100, height: 100, borderRadius: 100 }}
                     source={{ uri: userInSesion.profile_picture }}
                   />
-                ) : ( // Renderiza si userInSession.profile_picture es null      
+                ) : (
                   <View style={styles.largeIcon}>
                     <Icon name="account-circle" size={140} color="#c3c3c3" />
                   </View>
@@ -746,7 +499,7 @@ export default function MenuScreen(props: Props) {
           handleFinishDay(piezas, abordos);
         }}
       />
-      <ModalInternet
+       <ModalInternet
         isModalOpen={isModalInternetOpen}
         setIsModalOpen={setIsModalInternetOpen}
         iconName="wifi-off"
@@ -756,77 +509,40 @@ export default function MenuScreen(props: Props) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
-  container: {
+  container: { flex: 1 },
+  containerMenu: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: '#fff',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  containerMenu: {
+  containerSingle: {
     width: '100%',
-    height: '100%',
-    flexDirection: 'column',
-    paddingBottom: '11%',
-  },
-  containerRow: {
-    width: '100%',
-    flexDirection: 'row',
-    height: '26%',
-    padding: 10
-  },
-  containerLeft: {
-    width: '50%',
-    height: '100%',
-    padding: 10
-  },
-  containerRight: {
-    width: '50%',
-    height: '100%',
-    paddingHorizontal: 7,
-    paddingVertical: 7,
+    flex: 1,
+    paddingHorizontal: 10,
   },
   modalContainer: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalOptions: {
-    width: '90%',
+    width: '80%',
+    backgroundColor: '#fff',
     borderRadius: 10,
-    paddingHorizontal: 15,
-    flexDirection: 'column',
-    marginTop: '8%',
-    backgroundColor: '#fff',
-    elevation: 5,
-    height: '57%', 
-    marginHorizontal: '4%',
-  },
-  buttonFixed: {
-    width: '95%',
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    marginBottom: '3%',
-    marginLeft: 10,
-    marginRight: 10,
-    backgroundColor: '#fff',
-    marginTop: '1%',
-    borderWidth: 2,
-    borderColor: '#ed7d18',
-    marginHorizontal: 15,
-  },
-  buttonFont: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    paddingBottom: 20,
+    overflow: 'hidden',
   },
   containerIcon: {
-    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: '5%',
+    marginTop: 15,
   },
-  largeIcon: {
-    position: 'relative', 
-  },
+  largeIcon: { justifyContent: 'center', alignItems: 'center' },
+  buttonFixed: { marginTop: 20, alignSelf: 'center' },
+  buttonFont: { fontSize: 16 },
 });
