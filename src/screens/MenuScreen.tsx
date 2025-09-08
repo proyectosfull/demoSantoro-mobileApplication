@@ -328,9 +328,9 @@ export default function MenuScreen(props: Props) {
               props.navigation.navigate('EvidenciasScreen')
           }}>
             <CardMenu
-              iconName={finishDay === false ? require('../assets/evidences.png') : require('../assets/evidencesBlock.png')}
+              iconName={finishDay === false ? require('../assets/evidences.png') : require('../assets/evidences.png')}
               name="Evidencias"
-              blocked={finishDay === false ? false : true}
+              blocked={false}
               connectedWifi={NetworkService.isConnected}
               internetReacheable={NetworkService.isInternetReacheable}
               existLocalData={localDataBase.evidencias}

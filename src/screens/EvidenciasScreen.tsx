@@ -68,17 +68,20 @@ export default function EvidenciasScreen(props: Props) {
 
 
   const obtenerFechaHoraUTC = async () => {
-    try {
-      const respuesta = await fetch('https://worldtimeapi.org/api/ip');
-      console.log(respuesta);
-      const datos = await respuesta.json();
-      console.log(datos.datetime);
-      setHoraActual(datos.datetime);
-    } catch (error) {
-      console.error('Error al obtener la fecha y hora UTC:', error);
-      return null;
+    while (true) {
+      try {
+        const respuesta = await fetch('https://worldtimeapi.org/api/ip');
+        const datos = await respuesta.json();
+        console.log(datos.datetime);
+        setHoraActual(datos.datetime);
+        return datos.datetime; // sale de la función si fue exitoso
+      } catch (error) {
+        console.error('Error al obtener la fecha y hora UTC, reintentando...', error);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // espera 2s antes de reintentar
+      }
     }
   };
+
 
   const getLocalUser = async () => {
     const userInLocal = await AsyncStorage.getItem('username');
@@ -239,7 +242,7 @@ export default function EvidenciasScreen(props: Props) {
         })
         .catch(error => {
           setLoading(false);
-          console.log(error);
+          console.log(JSON.stringify(error.request));
           Snackbar.show({
             text: 'Ocurrio un error intenta de nuevo',
             duration: Snackbar.LENGTH_LONG,
@@ -268,6 +271,13 @@ export default function EvidenciasScreen(props: Props) {
     obtenerFechaHoraUTC();
   }, []);
 
+  const formatFileSize = (bytes: number | undefined) => {
+    if (bytes! < 1024) return `${bytes} B`;
+    else if (bytes! < 1024 * 1024) return `${(bytes! / 1024).toFixed(2)} KB`;
+    else return `${(bytes! / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+
   const takeImage = () => {
     launchCamera(
       {
@@ -283,8 +293,8 @@ export default function EvidenciasScreen(props: Props) {
           const uriImage =
             photoResponse.assets && photoResponse.assets[0].uri;
           if (uriImage && typeof uriImage === 'string') {
-
-            console.log(photoResponse.assets[0].type)
+            const asset = photoResponse.assets[0];
+            console.log("Tamaño de la imagen:", formatFileSize(asset.fileSize));
             const newPhoto = {
               uri: photoResponse.assets[0].uri,
               type: photoResponse.assets[0].type,
@@ -329,65 +339,66 @@ export default function EvidenciasScreen(props: Props) {
     );
   };
 
-   const takeVideo = () => {
-     launchCamera(
-       {
-       mediaType: 'video',
-         durationLimit: 6,
-         quality: 0.5,
-       },
-       videoResponse => {
-         if (videoResponse.didCancel) return;
-         if (videoResponse.errorCode) return;
-         if (videoResponse.errorMessage) return;
-         if (video.length < 1) {
+  const takeVideo = () => {
+    launchCamera(
+      {
+        mediaType: 'video',
+        durationLimit: 6,
+        quality: 0.2,
+      },
+      videoResponse => {
+        if (videoResponse.didCancel) return;
+        if (videoResponse.errorCode) return;
+        if (videoResponse.errorMessage) return;
+        if (video.length < 1) {
           const uriVideo = videoResponse.assets && videoResponse.assets[0].uri;
-           const typeVideo = videoResponse.assets && videoResponse.assets[0].type;
-           const nameVideo = videoResponse.assets && videoResponse.assets[0].fileName;
-           if (uriVideo && typeof uriVideo === 'string') {
+          const typeVideo = videoResponse.assets && videoResponse.assets[0].type;
+          const nameVideo = videoResponse.assets && videoResponse.assets[0].fileName;
+          if (uriVideo && typeof uriVideo === 'string') {
+            const asset = videoResponse.assets![0];
+            console.log("Tamaño del video:", formatFileSize(asset.fileSize));
+            const newVideo = {
+              uri: uriVideo,
+              type: typeVideo,
+              name: nameVideo,
+            };
 
-             const newVideo = {
-               uri: uriVideo,
-               type: typeVideo,
-               name: nameVideo,
-             };
-
-             setArchives((prevState) => ({
-               ...prevState,
-               videos: [...prevState.videos, newVideo],
-             }));
-             // Solo asigna el valor si uri es una cadena válida
-             setVideo([...video, uriVideo]); // Agrega la nueva URI al estado existente
-             if (Platform.OS === 'android') {
-               ToastAndroid.show(
-                 '¡Se guardo la evidencia de su video',
-                 ToastAndroid.SHORT,
-               );
-             } else {
-               Snackbar.show({
-                 text: '¡Se guardo la evidencia de su video',
-                 duration: Snackbar.LENGTH_LONG,
-                 textColor: '#ed7d18',
-               });
-             }
-           }
-         } else {
-           if (Platform.OS === 'android') {
-             ToastAndroid.show(
-               'Solo puede adjuntar 1 video',
-               ToastAndroid.SHORT,
-             );
-           } else {
-             Snackbar.show({
-               text: 'Solo puede adjuntar 1 video',
-               duration: Snackbar.LENGTH_LONG,
-               textColor: '#ed7d18',
-             });
-           }
-         }
-       },
-     );
-   };
+            setArchives((prevState) => ({
+              ...prevState,
+              videos: [...prevState.videos, newVideo],
+            }));
+            // Solo asigna el valor si uri es una cadena válida
+            setVideo([...video, uriVideo]); // Agrega la nueva URI al estado existente
+            if (Platform.OS === 'android') {
+              ToastAndroid.show(
+                '¡Se guardo la evidencia de su video',
+                ToastAndroid.SHORT,
+              );
+            } else {
+              Snackbar.show({
+                text: '¡Se guardo la evidencia de su video',
+                duration: Snackbar.LENGTH_LONG,
+                textColor: '#ed7d18',
+              });
+            }
+          }
+        } else {
+          if (Platform.OS === 'android') {
+            ToastAndroid.show(
+              'Solo puede adjuntar 1 video',
+              ToastAndroid.SHORT,
+            );
+          } else {
+            Snackbar.show({
+              text: 'Solo puede adjuntar 1 video',
+              duration: Snackbar.LENGTH_LONG,
+              textColor: '#ed7d18',
+            });
+          }
+        }
+      },
+    );
+  };
 
 
   return (
@@ -418,7 +429,7 @@ export default function EvidenciasScreen(props: Props) {
               mensaje: values.mensaje,
               multimedia: archives,
             };
-            if (photo.length === 0) {
+            if (photo.length === 0 && video.length === 0) {
               if (Platform.OS === 'android') {
                 ToastAndroid.show(
                   'Debe adjuntar al menos una evidencia',
@@ -498,13 +509,13 @@ export default function EvidenciasScreen(props: Props) {
                       onPress={takeImage}
                       style={{ margin: 0, padding: 0 }}
                     />
-                    { <IconButton
+                    {<IconButton
                       icon="file-video"
                       iconColor={'#888'}
                       size={28}
                       onPress={takeVideo}
                       style={{ margin: 0, padding: 0 }}
-                    /> }
+                    />}
                   </View>
 
                   <Button
@@ -512,6 +523,7 @@ export default function EvidenciasScreen(props: Props) {
                     onPress={() => {
                       handleSubmit();
                     }}
+                    disabled={loading}
                     icon="send"
                     loading={loading}
                     style={{ backgroundColor: '#ed7d18', borderRadius: 10 }}
@@ -524,7 +536,7 @@ export default function EvidenciasScreen(props: Props) {
 
               <View style={{ flexDirection: 'row', marginTop: 10 }}>
                 <Text style={{ color: '#888' }}>N° de Archivos Cargados: </Text>
-                <Text style={{ color: '#888' }}>{photo.length}</Text>
+                <Text style={{ color: '#888' }}>{video.length + photo.length}</Text>
               </View>
 
             </View>
